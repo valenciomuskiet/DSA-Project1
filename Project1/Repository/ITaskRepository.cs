@@ -1,7 +1,8 @@
-namespace Project1.Model;
+using Project1.Model;
 
+namespace Project1.Repository;
 
-interface ITaskRepository {
+public interface ITaskRepository {
     List<TaskItem> LoadTasks();
     void SaveTasks(List<TaskItem> tasks);
 }
