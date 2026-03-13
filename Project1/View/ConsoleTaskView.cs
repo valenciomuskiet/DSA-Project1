@@ -1,6 +1,6 @@
+using Project1.Collections;
 using Project1.Model;
 using Project1.Service;
-
 
 namespace Project1.View;
 
@@ -13,12 +13,16 @@ public class ConsoleTaskView : ITaskView
         _service = service;
     }
 
-    void DisplayTasks(IEnumerable<TaskItem> tasks)
+    void DisplayTasks(IMyCollection<TaskItem> tasks)
     {
         Console.Clear();
         Console.WriteLine("==== ToDo List ====");
-        foreach (var task in tasks)
+
+        for (int i = 0; i < tasks.Count; i++)
+        {
+            TaskItem task = tasks.GetAt(i);
             Console.WriteLine($"{task.Id}. {task.Description} [{(task.Completed ? "X" : " ")}]");
+        }
     }
 
     string Prompt(string prompt)

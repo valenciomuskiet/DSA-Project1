@@ -1,3 +1,4 @@
+using Project1.Collections;
 using Project1.Model;
 using Project1.Repository;
 
@@ -6,7 +7,7 @@ namespace Project1.Service;
 public class TaskService : ITaskService
 {
     private readonly ITaskRepository _repository;
-    private readonly List<TaskItem> _tasks;
+    private readonly IMyCollection<TaskItem> _tasks;
 
     public TaskService(ITaskRepository repository)
     {
@@ -14,15 +15,30 @@ public class TaskService : ITaskService
         _tasks = _repository.LoadTasks();
     }
 
-    public IEnumerable<TaskItem> GetAllTasks() => _tasks;
+    public IMyCollection<TaskItem> GetAllTasks()
+    {
+        return _tasks;
+    }
 
     public void AddTask(string description)
     {
-        int newId = _tasks.Count > 0 ? _tasks[^1].Id + 1 : 1;
+        if (string.IsNullOrWhiteSpace(description))
+            return;
 
-        var newTask = new TaskItem
+        int maxId = 0;
+
+        for (int i = 0; i < _tasks.Count; i++)
         {
-            Id = newId,
+            TaskItem currentTask = _tasks.GetAt(i);
+            if (currentTask.Id > maxId)
+            {
+                maxId = currentTask.Id;
+            }
+        }
+
+        TaskItem newTask = new TaskItem
+        {
+            Id = maxId + 1,
             Description = description,
             Completed = false
         };
@@ -33,19 +49,37 @@ public class TaskService : ITaskService
 
     public void RemoveTask(int id)
     {
-        var task = _tasks.Find(t => t.Id == id);
-        if (task is null) return;
+        int indexToRemove = -1;
 
-        _tasks.Remove(task);
-        _repository.SaveTasks(_tasks);
+        for (int i = 0; i < _tasks.Count; i++)
+        {
+            if (_tasks.GetAt(i).Id == id)
+            {
+                indexToRemove = i;
+                break;
+            }
+        }
+
+        if (indexToRemove != -1)
+        {
+            _tasks.RemoveAt(indexToRemove);
+            _repository.SaveTasks(_tasks);
+        }
     }
 
     public void ToggleTaskCompletion(int id)
     {
-        var task = _tasks.Find(t => t.Id == id);
-        if (task is null) return;
+        for (int i = 0; i < _tasks.Count; i++)
+        {
+            TaskItem task = _tasks.GetAt(i);
 
-        task.Completed = !task.Completed;
-        _repository.SaveTasks(_tasks);
+            if (task.Id == id)
+            {
+                task.Completed = !task.Completed;
+                _tasks.SetAt(i, task);
+                _repository.SaveTasks(_tasks);
+                break;
+            }
+        }
     }
 }
