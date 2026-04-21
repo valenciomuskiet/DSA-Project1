@@ -2,18 +2,10 @@
   {
     "Id": 1,
     "Description": "2",
-    "Completed": false,
+    "Completed": true,
     "Priority": 2,
-    "Status": 1,
+    "Status": 3,
     "CreatedAt": "2026-03-31T08:52:00.128767+02:00"
-  },
-  {
-    "Id": 2,
-    "Description": "a\uFFFD\uFFFD\uFFFD\u0002\u0001\uFFFDT\uFFFD",
-    "Completed": false,
-    "Priority": 2,
-    "Status": 1,
-    "CreatedAt": "2026-03-31T08:53:03.953215+02:00"
   },
   {
     "Id": 3,
@@ -22,5 +14,13 @@
     "Priority": 2,
     "Status": 1,
     "CreatedAt": "2026-03-31T08:55:28.842565+02:00"
+  },
+  {
+    "Id": 4,
+    "Description": "taskyupdated",
+    "Completed": false,
+    "Priority": 2,
+    "Status": 2,
+    "CreatedAt": "2026-04-21T12:32:10.382666+02:00"
   }
 ]
