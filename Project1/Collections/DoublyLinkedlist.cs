@@ -9,7 +9,7 @@ namespace Project1.Collections;
 ///   - Delete via het aanpassen van prev/next-pointers (slide 37)
 ///   - Search lineair van First naar Last (slide 32)
 /// </summary>
-public class DoublyLinkedList<T> : IMyCollection<T> where T : IEquatable<T>
+public class DoublyLinkedList<T> : IMyCollection<T> where T : IEquatable<T>, IComparable<T>
 {
     // ── Interne Node-klasse (slides Unit 3, slide 30) ────────────────────────
     private class Node

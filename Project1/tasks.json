@@ -6,16 +6,18 @@
     "Priority": 2,
     "Status": 3,
     "CreatedAt": "2026-03-31T08:52:00.128767+02:00",
-    "AssignedUserId": null
+    "AssignedUserId": null,
+    "DependsOn": []
   },
   {
     "Id": 3,
-    "Description": "mynewtask",
-    "Completed": true,
+    "Description": "mynewtask2",
+    "Completed": false,
     "Priority": 2,
-    "Status": 3,
+    "Status": 2,
     "CreatedAt": "2026-03-31T08:55:28.842565+02:00",
-    "AssignedUserId": null
+    "AssignedUserId": null,
+    "DependsOn": []
   },
   {
     "Id": 4,
@@ -24,6 +26,7 @@
     "Priority": 2,
     "Status": 2,
     "CreatedAt": "2026-04-21T12:32:10.382666+02:00",
-    "AssignedUserId": null
+    "AssignedUserId": null,
+    "DependsOn": []
   }
 ]

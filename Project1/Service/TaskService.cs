@@ -9,9 +9,6 @@ public class TaskService : ITaskService
 {
     private readonly ITaskRepository _repository;
     private readonly IMyCollection<TaskItem> _tasks;
-
-    // Users worden altijd in een DoublyLinkedList bewaard (Sprint 2 vereiste).
-    // De rest van de applicatie ziet alleen IMyCollection<User>.
     private readonly IMyCollection<User> _users;
 
     public TaskService(ITaskRepository repository)
@@ -66,6 +63,25 @@ public class TaskService : ITaskService
         TaskItem? task = FindTaskById(id);
         if (task == null) return false;
 
+        // Verwijder deze taak als prereq uit andere taken (geen LINQ)
+        IMyIterator<TaskItem> it = _tasks.GetIterator();
+        while (it.HasNext())
+        {
+            TaskItem other = it.Next();
+            if (other.DependsOn.Length == 0) continue;
+
+            int newLen = 0;
+            for (int i = 0; i < other.DependsOn.Length; i++)
+                if (other.DependsOn[i] != id) newLen++;
+
+            int[] filtered = new int[newLen];
+            int idx = 0;
+            for (int i = 0; i < other.DependsOn.Length; i++)
+                if (other.DependsOn[i] != id) filtered[idx++] = other.DependsOn[i];
+
+            other.DependsOn = filtered;
+        }
+
         bool removed = _tasks.Remove(task);
         if (removed) _repository.SaveTasks(_tasks);
         return removed;
@@ -108,21 +124,14 @@ public class TaskService : ITaskService
         _repository.SaveTasks(_tasks);
     }
 
-    // ── Gebruikersbeheer (Sprint 2) ───────────────────────────────────────────
+    // ── Gebruikers (Sprint 2) ─────────────────────────────────────────────────
 
     public IMyCollection<User> GetAllUsers() => _users;
 
     public bool AddUser(string name)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            return false;
-
-        User user = new User
-        {
-            Id = GetNextUserId(),
-            Name = name.Trim()
-        };
-
+        if (string.IsNullOrWhiteSpace(name)) return false;
+        User user = new User { Id = GetNextUserId(), Name = name.Trim() };
         _users.Add(user);
         _repository.SaveUsers(_users);
         return true;
@@ -133,7 +142,6 @@ public class TaskService : ITaskService
         User? user = FindUserById(userId);
         if (user == null) return false;
 
-        // Verwijder toewijzingen aan deze user
         IMyIterator<TaskItem> it = _tasks.GetIterator();
         while (it.HasNext())
         {
@@ -151,16 +159,11 @@ public class TaskService : ITaskService
         return removed;
     }
 
-    // ── Taaktoewijzing (Sprint 2) ─────────────────────────────────────────────
-    // Per-user modification rights: alleen de toegewezen user mag een taak wijzigen.
-    // Dit wordt gecontroleerd via CanModify() vanuit de View.
-
     public bool AssignTask(int taskId, int userId)
     {
         TaskItem? task = FindTaskById(taskId);
         User? user = FindUserById(userId);
         if (task == null || user == null) return false;
-
         task.AssignedUserId = userId;
         _tasks.Dirty = true;
         _repository.SaveTasks(_tasks);
@@ -171,7 +174,6 @@ public class TaskService : ITaskService
     {
         TaskItem? task = FindTaskById(taskId);
         if (task == null) return false;
-
         task.AssignedUserId = null;
         _tasks.Dirty = true;
         _repository.SaveTasks(_tasks);
@@ -180,6 +182,87 @@ public class TaskService : ITaskService
 
     public IMyCollection<TaskItem> GetTasksByUser(int userId)
         => _tasks.Filter(t => t.AssignedUserId == userId);
+
+    // ── Taakafhankelijkheden (Sprint 3) ───────────────────────────────────────
+
+    /// <summary>
+    /// Voegt een vereiste toe: taskId kan pas starten als prereqId Done is.
+    /// </summary>
+    public bool AddDependency(int taskId, int prereqId)
+    {
+        TaskItem? task = FindTaskById(taskId);
+        TaskItem? prereq = FindTaskById(prereqId);
+
+        if (task == null || prereq == null) return false;
+        if (taskId == prereqId) return false;
+
+        // Voorkom circulaire afhankelijkheid
+        if (WouldCreateCycle(taskId, prereqId)) return false;
+
+        // Voeg toe als nog niet aanwezig (geen LINQ)
+        if (!ContainsId(task.DependsOn, prereqId))
+        {
+            int[] newDeps = new int[task.DependsOn.Length + 1];
+            for (int i = 0; i < task.DependsOn.Length; i++)
+                newDeps[i] = task.DependsOn[i];
+            newDeps[task.DependsOn.Length] = prereqId;
+            task.DependsOn = newDeps;
+            _tasks.Dirty = true;
+            _repository.SaveTasks(_tasks);
+        }
+        return true;
+    }
+
+    public bool RemoveDependency(int taskId, int prereqId)
+    {
+        TaskItem? task = FindTaskById(taskId);
+        if (task == null) return false;
+
+        int before = task.DependsOn.Length;
+
+        int newLen = 0;
+        for (int i = 0; i < task.DependsOn.Length; i++)
+            if (task.DependsOn[i] != prereqId) newLen++;
+
+        int[] filtered = new int[newLen];
+        int idx = 0;
+        for (int i = 0; i < task.DependsOn.Length; i++)
+            if (task.DependsOn[i] != prereqId) filtered[idx++] = task.DependsOn[i];
+
+        task.DependsOn = filtered;
+
+        if (task.DependsOn.Length < before)
+        {
+            _tasks.Dirty = true;
+            _repository.SaveTasks(_tasks);
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Een taak kan starten als alle vereiste taken Done zijn.
+    /// Gebaseerd op de BST-logica: zoek elke prereq en controleer status.
+    /// </summary>
+    public bool CanStart(int taskId)
+    {
+        TaskItem? task = FindTaskById(taskId);
+        if (task == null || task.DependsOn.Length == 0) return true;
+
+        foreach (int prereqId in task.DependsOn)
+        {
+            TaskItem? prereq = FindTaskById(prereqId);
+            if (prereq == null || prereq.Status != TaskStatus.Done)
+                return false;
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Geeft alle taken terug die geblokkeerd zijn door openstaande prereqs.
+    /// </summary>
+    public IMyCollection<TaskItem> GetBlockedTasks()
+        => _tasks.Filter(t => t.DependsOn.Length > 0 && !CanStart(t.Id));
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -194,4 +277,31 @@ public class TaskService : ITaskService
 
     private int GetNextUserId()
         => _users.Reduce(0, (max, u) => u.Id > max ? u.Id : max) + 1;
+
+    // Eigen Contains zonder LINQ
+    private bool ContainsId(int[] arr, int value)
+    {
+        for (int i = 0; i < arr.Length; i++)
+            if (arr[i] == value) return true;
+        return false;
+    }
+
+    /// <summary>
+    /// Controleert of het toevoegen van prereqId als vereiste van taskId
+    /// een circulaire afhankelijkheid zou veroorzaken.
+    /// Eenvoudige DFS: kijk of taskId bereikbaar is vanuit prereqId.
+    /// </summary>
+    private bool WouldCreateCycle(int taskId, int prereqId)
+    {
+        // Als prereqId zelf afhankelijk is van taskId → cyclus
+        TaskItem? prereq = FindTaskById(prereqId);
+        if (prereq == null) return false;
+
+        foreach (int dep in prereq.DependsOn)
+        {
+            if (dep == taskId) return true;
+            if (WouldCreateCycle(taskId, dep)) return true;
+        }
+        return false;
+    }
 }

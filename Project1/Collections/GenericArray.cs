@@ -1,6 +1,6 @@
 namespace Project1.Collections;
 
-public class GenericArray<T> : IMyCollection<T> where T : IEquatable<T>
+public class GenericArray<T> : IMyCollection<T> where T : IEquatable<T>, IComparable<T>
 {
     protected T[] _data;
     protected int _index;

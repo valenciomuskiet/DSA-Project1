@@ -9,8 +9,6 @@ public class ConsoleTaskView : ITaskView
 {
     private readonly ITaskService _service;
     private readonly string _collectionName;
-
-    // Geselecteerde user voor per-user rechten (null = geen ingelogde user)
     private User? _currentUser;
 
     public ConsoleTaskView(ITaskService service, string collectionName)
@@ -45,7 +43,8 @@ public class ConsoleTaskView : ITaskView
                     _service.SortByPriorityDescending();
                     Pause("Taken gesorteerd op prioriteit.");
                     break;
-                // Sprint 2: gebruikersbeheer
+                case "k":  KanbanFlow();            break;
+                case "d":  DependencyMenuFlow();    break;
                 case "u":  UserMenuFlow();          break;
                 case "0":  return;
                 default:   Pause("Ongeldige optie."); break;
@@ -53,7 +52,7 @@ public class ConsoleTaskView : ITaskView
         }
     }
 
-    // ── Menu ─────────────────────────────────────────────────────────────────
+    // ── Menu ──────────────────────────────────────────────────────────────────
 
     private void ShowMenu()
     {
@@ -69,6 +68,8 @@ public class ConsoleTaskView : ITaskView
         Console.WriteLine("  3. Taak verwijderen      7. Filter op datum");
         Console.WriteLine("  4. Status omschakelen    8. Sorteer op datum");
         Console.WriteLine("                           9. Sorteer op prioriteit");
+        Console.WriteLine("  k. Kanban-weergave");
+        Console.WriteLine("  d. Afhankelijkhedenmenu");
         Console.WriteLine("  u. Gebruikersmenu");
         Console.WriteLine("  0. Afsluiten");
         Console.WriteLine();
@@ -90,22 +91,154 @@ public class ConsoleTaskView : ITaskView
 
         IMyIterator<TaskItem> iterator = tasks.GetIterator();
         while (iterator.HasNext())
-        {
-            TaskItem task = iterator.Next();
-            string userLabel = "";
+            Console.WriteLine("  " + FormatTask(iterator.Next()));
+    }
 
-            if (task.AssignedUserId.HasValue)
+    private string FormatTask(TaskItem task)
+    {
+        string userLabel = "";
+        if (task.AssignedUserId.HasValue)
+        {
+            User? u = _service.GetAllUsers()
+                .FindBy(task.AssignedUserId.Value, (usr, id) => usr.Id == id);
+            userLabel = u != null ? $" [@{u.Name}]" : " [@?]";
+        }
+
+        string blocked = !CanStart(task) ? " [GEBLOKKEERD]" : "";
+        return $"{task}{userLabel}{blocked}";
+    }
+
+    // ── Kanban-weergave (Sprint 3) ────────────────────────────────────────────
+
+    private void KanbanFlow()
+    {
+        Console.Clear();
+        Console.WriteLine($"==== KANBAN ({_collectionName}) ====");
+        Console.WriteLine();
+
+        IMyCollection<TaskItem> todo       = _service.FilterByStatus(TaskStatus.Todo);
+        IMyCollection<TaskItem> inProgress = _service.FilterByStatus(TaskStatus.InProgress);
+        IMyCollection<TaskItem> done       = _service.FilterByStatus(TaskStatus.Done);
+
+        int colWidth = 26;
+        string sep = new string('─', colWidth);
+
+        Console.WriteLine("  " + "TODO".PadRight(colWidth) + "  " + "IN PROGRESS".PadRight(colWidth) + "  " + "DONE");
+        Console.WriteLine($"  {sep}  {sep}  {sep}");
+
+        // Zet elke kolom om naar array voor rij-gewijze weergave
+        TaskItem[] todoArr       = todo.ToArray();
+        TaskItem[] inProgressArr = inProgress.ToArray();
+        TaskItem[] doneArr       = done.ToArray();
+
+        int maxRows = Math.Max(todoArr.Length, Math.Max(inProgressArr.Length, doneArr.Length));
+
+        for (int i = 0; i < maxRows; i++)
+        {
+            string col1 = i < todoArr.Length
+                ? TruncateKanban(todoArr[i], colWidth) : "";
+            string col2 = i < inProgressArr.Length
+                ? TruncateKanban(inProgressArr[i], colWidth) : "";
+            string col3 = i < doneArr.Length
+                ? TruncateKanban(doneArr[i], colWidth) : "";
+
+            Console.WriteLine("  " + col1.PadRight(colWidth) + "  " + col2.PadRight(colWidth) + "  " + col3);
+        }
+
+        Console.WriteLine();
+        Console.WriteLine($"  Todo: {todoArr.Length}  |  In Progress: {inProgressArr.Length}  |  Done: {doneArr.Length}");
+        Console.WriteLine();
+
+        // Toon geblokkeerde taken apart
+        IMyCollection<TaskItem> blocked = _service.GetBlockedTasks();
+        if (blocked.Count > 0)
+        {
+            Console.WriteLine("  Geblokkeerde taken (wachten op prereqs):");
+            IMyIterator<TaskItem> it = blocked.GetIterator();
+            while (it.HasNext())
             {
-                User? u = _service.GetAllUsers()
-                    .FindBy(task.AssignedUserId.Value, (usr, id) => usr.Id == id);
-                userLabel = u != null ? $" [@{u.Name}]" : " [@?]";
+                TaskItem t = it.Next();
+                string prereqs = string.Join(", ", t.DependsOn);
+                Console.WriteLine($"    #{t.Id} {t.Description} — wacht op: {prereqs}");
+            }
+        }
+
+        Pause();
+    }
+
+    private string TruncateKanban(TaskItem task, int width)
+    {
+        string blocked = !CanStart(task) ? "!" : " ";
+        string line = $"{blocked}#{task.Id} {task.Description}";
+        return line.Length > width ? line[..(width - 1)] + "…" : line;
+    }
+
+    private bool CanStart(TaskItem task)
+        => _service.CanStart(task.Id);
+
+    // ── Afhankelijkhedenmenu (Sprint 3) ───────────────────────────────────────
+
+    private void DependencyMenuFlow()
+    {
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine("==== AFHANKELIJKHEDEN (BST) ====");
+            Console.WriteLine();
+
+            // Toon alle taken met hun prereqs
+            IMyIterator<TaskItem> it = _service.GetAllTasks().GetIterator();
+            while (it.HasNext())
+            {
+                TaskItem t = it.Next();
+                if (t.DependsOn.Length > 0)
+                {
+                    bool kanStarten = _service.CanStart(t.Id);
+                    string status = kanStarten ? "✓ kan starten" : "✗ geblokkeerd";
+                    Console.WriteLine($"  #{t.Id} {t.Description}");
+                    Console.WriteLine($"      wacht op: [{string.Join(", ", t.DependsOn)}] — {status}");
+                }
             }
 
-            Console.WriteLine($"  {task}{userLabel}");
+            Console.WriteLine();
+            Console.WriteLine("  1. Afhankelijkheid toevoegen");
+            Console.WriteLine("  2. Afhankelijkheid verwijderen");
+            Console.WriteLine("  3. Controleer of taak kan starten");
+            Console.WriteLine("  0. Terug");
+            Console.WriteLine();
+
+            string opt = Prompt("Kies: ");
+            switch (opt)
+            {
+                case "1":
+                    int taskId  = PromptInt("Taak-id: ");
+                    int prereqId = PromptInt("Vereiste taak-id: ");
+                    bool added = _service.AddDependency(taskId, prereqId);
+                    Pause(added ? "Afhankelijkheid toegevoegd." :
+                        "Mislukt (niet gevonden, zelfde taak of cyclus).");
+                    break;
+
+                case "2":
+                    int rmTask   = PromptInt("Taak-id: ");
+                    int rmPrereq = PromptInt("Vereiste taak-id om te verwijderen: ");
+                    bool removed = _service.RemoveDependency(rmTask, rmPrereq);
+                    Pause(removed ? "Afhankelijkheid verwijderd." : "Niet gevonden.");
+                    break;
+
+                case "3":
+                    int checkId = PromptInt("Taak-id om te controleren: ");
+                    bool can = _service.CanStart(checkId);
+                    Pause(can ? "Taak kan starten (alle prereqs zijn Done)."
+                              : "Taak is geblokkeerd (niet alle prereqs zijn Done).");
+                    break;
+
+                case "0": return;
+                default: Pause("Ongeldige optie."); break;
+            }
         }
     }
 
-    // ── Taak-flows ───────────────────────────────────────────────────────────
+    // ── Taak-flows ────────────────────────────────────────────────────────────
 
     private void AddTaskFlow()
     {
@@ -118,14 +251,11 @@ public class ConsoleTaskView : ITaskView
     private void UpdateTaskFlow()
     {
         int id = PromptInt("Taak-id om bij te werken: ");
-
-        // Rechtencheck: alleen toegewezen user mag wijzigen
         if (!CanModify(id))
         {
-            Pause("Geen toegang: deze taak is aan een andere gebruiker toegewezen.");
+            Pause("Geen toegang: taak is aan een andere gebruiker toegewezen.");
             return;
         }
-
         string description = Prompt("Nieuwe omschrijving: ");
         TaskPriority priority = PromptPriority();
         TaskStatus status = PromptStatus();
@@ -136,13 +266,11 @@ public class ConsoleTaskView : ITaskView
     private void RemoveTaskFlow()
     {
         int id = PromptInt("Taak-id om te verwijderen: ");
-
         if (!CanModify(id))
         {
-            Pause("Geen toegang: deze taak is aan een andere gebruiker toegewezen.");
+            Pause("Geen toegang: taak is aan een andere gebruiker toegewezen.");
             return;
         }
-
         bool ok = _service.RemoveTask(id);
         Pause(ok ? "Taak verwijderd." : "Taak niet gevonden.");
     }
@@ -150,13 +278,11 @@ public class ConsoleTaskView : ITaskView
     private void ToggleTaskFlow()
     {
         int id = PromptInt("Taak-id om te togglen: ");
-
         if (!CanModify(id))
         {
-            Pause("Geen toegang: deze taak is aan een andere gebruiker toegewezen.");
+            Pause("Geen toegang: taak is aan een andere gebruiker toegewezen.");
             return;
         }
-
         bool ok = _service.ToggleTaskCompletion(id);
         Pause(ok ? "Status omgeschakeld." : "Taak niet gevonden.");
     }
@@ -187,7 +313,7 @@ public class ConsoleTaskView : ITaskView
         Pause();
     }
 
-    // ── Gebruikersmenu (Sprint 2) ─────────────────────────────────────────────
+    // ── Gebruikersmenu (Sprint 2) ──────────────────────────────────────────────
 
     private void UserMenuFlow()
     {
@@ -197,10 +323,14 @@ public class ConsoleTaskView : ITaskView
             Console.WriteLine("==== GEBRUIKERSMENU (Doubly Linked List) ====");
             Console.WriteLine();
 
-            IMyIterator<User> it = _service.GetAllUsers().GetIterator();
-            if (!_service.GetAllUsers().Count.Equals(0))
+            IMyCollection<User> users = _service.GetAllUsers();
+            if (users.Count == 0)
             {
-                it = _service.GetAllUsers().GetIterator();
+                Console.WriteLine("  Geen gebruikers.");
+            }
+            else
+            {
+                IMyIterator<User> it = users.GetIterator();
                 while (it.HasNext())
                 {
                     User u = it.Next();
@@ -208,19 +338,12 @@ public class ConsoleTaskView : ITaskView
                     Console.WriteLine($"  {u}{active}");
                 }
             }
-            else
-            {
-                Console.WriteLine("  Geen gebruikers.");
-            }
 
             Console.WriteLine();
-            Console.WriteLine("  1. Gebruiker toevoegen");
-            Console.WriteLine("  2. Gebruiker verwijderen");
-            Console.WriteLine("  3. Inloggen als gebruiker");
+            Console.WriteLine("  1. Gebruiker toevoegen    5. Taken van gebruiker");
+            Console.WriteLine("  2. Gebruiker verwijderen  6. Taak toewijzen");
+            Console.WriteLine("  3. Inloggen               7. Toewijzing verwijderen");
             Console.WriteLine("  4. Uitloggen");
-            Console.WriteLine("  5. Taken van gebruiker tonen");
-            Console.WriteLine("  6. Taak toewijzen");
-            Console.WriteLine("  7. Toewijzing verwijderen");
             Console.WriteLine("  0. Terug");
             Console.WriteLine();
 
@@ -229,74 +352,51 @@ public class ConsoleTaskView : ITaskView
             {
                 case "1":
                     string name = Prompt("Naam: ");
-                    bool added = _service.AddUser(name);
-                    Pause(added ? "Gebruiker toegevoegd." : "Kon gebruiker niet toevoegen.");
+                    Pause(_service.AddUser(name) ? "Gebruiker toegevoegd." : "Mislukt.");
                     break;
-
                 case "2":
-                    int delId = PromptInt("Gebruikers-id om te verwijderen: ");
-                    bool deleted = _service.RemoveUser(delId);
-                    if (deleted && _currentUser?.Id == delId)
-                        _currentUser = null;
-                    Pause(deleted ? "Gebruiker verwijderd." : "Niet gevonden.");
+                    int delId = PromptInt("Gebruikers-id: ");
+                    bool del = _service.RemoveUser(delId);
+                    if (del && _currentUser?.Id == delId) _currentUser = null;
+                    Pause(del ? "Verwijderd." : "Niet gevonden.");
                     break;
-
                 case "3":
-                    int loginId = PromptInt("Gebruikers-id om in te loggen: ");
-                    User? found = _service.GetAllUsers()
-                        .FindBy(loginId, (u, k) => u.Id == k);
-                    _currentUser = found;
-                    Pause(found != null ? $"Ingelogd als {found.Name}." : "Gebruiker niet gevonden.");
+                    int loginId = PromptInt("Gebruikers-id: ");
+                    _currentUser = _service.GetAllUsers().FindBy(loginId, (u, k) => u.Id == k);
+                    Pause(_currentUser != null ? $"Ingelogd als {_currentUser.Name}." : "Niet gevonden.");
                     break;
-
                 case "4":
                     _currentUser = null;
                     Pause("Uitgelogd.");
                     break;
-
                 case "5":
                     int uid = PromptInt("Gebruikers-id: ");
-                    User? showUser = _service.GetAllUsers()
-                        .FindBy(uid, (u, k) => u.Id == k);
-                    string label = showUser != null ? $"TAKEN VAN {showUser.Name}" : "ONBEKENDE USER";
-                    DisplayTasks(_service.GetTasksByUser(uid), label);
+                    User? showUser = _service.GetAllUsers().FindBy(uid, (u, k) => u.Id == k);
+                    DisplayTasks(_service.GetTasksByUser(uid),
+                        showUser != null ? $"TAKEN VAN {showUser.Name}" : "ONBEKENDE USER");
                     Pause();
                     break;
-
                 case "6":
-                    int taskId = PromptInt("Taak-id: ");
-                    int userId = PromptInt("Gebruikers-id: ");
-                    bool assigned = _service.AssignTask(taskId, userId);
-                    Pause(assigned ? "Taak toegewezen." : "Taak of gebruiker niet gevonden.");
+                    int tId = PromptInt("Taak-id: ");
+                    int uId = PromptInt("Gebruikers-id: ");
+                    Pause(_service.AssignTask(tId, uId) ? "Toegewezen." : "Niet gevonden.");
                     break;
-
                 case "7":
-                    int unTaskId = PromptInt("Taak-id om toewijzing te verwijderen: ");
-                    bool unassigned = _service.UnassignTask(unTaskId);
-                    Pause(unassigned ? "Toewijzing verwijderd." : "Taak niet gevonden.");
+                    int unId = PromptInt("Taak-id: ");
+                    Pause(_service.UnassignTask(unId) ? "Toewijzing verwijderd." : "Niet gevonden.");
                     break;
-
-                case "0":
-                    return;
-
-                default:
-                    Pause("Ongeldige optie.");
-                    break;
+                case "0": return;
+                default: Pause("Ongeldige optie."); break;
             }
         }
     }
 
-    // ── Rechtencheck ─────────────────────────────────────────────────────────
-    // Een taak mag alleen gewijzigd worden door de toegewezen user,
-    // of door iemand die niet ingelogd is (onbeperkte toegang).
+    // ── Rechtencheck ──────────────────────────────────────────────────────────
 
     private bool CanModify(int taskId)
     {
-        TaskItem? task = _service.GetAllTasks()
-            .FindBy(taskId, (t, k) => t.Id == k);
-
-        if (task == null) return true;
-        if (!task.AssignedUserId.HasValue) return true;
+        TaskItem? task = _service.GetAllTasks().FindBy(taskId, (t, k) => t.Id == k);
+        if (task == null || !task.AssignedUserId.HasValue) return true;
         if (_currentUser == null) return true;
         return task.AssignedUserId == _currentUser.Id;
     }
