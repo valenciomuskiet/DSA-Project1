@@ -1,10 +1,6 @@
 namespace Project1.Model;
 
-/// <summary>
-/// Stelt een teamlid voor aan wie taken kunnen worden toegewezen.
-/// Opgeslagen als DoublyLinkedList van Users (Sprint 2).
-/// </summary>
-public class User : IEquatable<User>
+public class User : IEquatable<User>, IComparable<User>
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
@@ -13,6 +9,12 @@ public class User : IEquatable<User>
     {
         if (other is null) return false;
         return Id == other.Id;
+    }
+
+    public int CompareTo(User? other)
+    {
+        if (other is null) return 1;
+        return Id.CompareTo(other.Id);
     }
 
     public override string ToString() => $"[{Id}] {Name}";

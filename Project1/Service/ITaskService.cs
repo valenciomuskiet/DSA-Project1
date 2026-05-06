@@ -29,4 +29,10 @@ public interface ITaskService
     bool AssignTask(int taskId, int userId);
     bool UnassignTask(int taskId);
     IMyCollection<TaskItem> GetTasksByUser(int userId);
+
+    // Sprint 3: taakafhankelijkheden
+    bool AddDependency(int taskId, int prereqId);
+    bool RemoveDependency(int taskId, int prereqId);
+    bool CanStart(int taskId);
+    IMyCollection<TaskItem> GetBlockedTasks();
 }

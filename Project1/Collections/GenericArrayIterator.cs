@@ -1,6 +1,6 @@
 namespace Project1.Collections;
 
-public class GenericArrayIterator<T> : IMyIterator<T> where T : IEquatable<T>
+public class GenericArrayIterator<T> : IMyIterator<T> where T : IEquatable<T>, IComparable<T>
 {
     private readonly GenericArray<T> _array;
     private int _position;

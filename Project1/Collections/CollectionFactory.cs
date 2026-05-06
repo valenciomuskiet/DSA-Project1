@@ -33,13 +33,13 @@ public static class CollectionFactory
         }
     }
 
-    public static IMyCollection<T> Create<T>(CollectionType type) where T : IEquatable<T>
+    public static IMyCollection<T> Create<T>(CollectionType type) where T : IEquatable<T>, IComparable<T>
     {
         return type switch
         {
             CollectionType.Array            => new GenericArray<T>(),
             CollectionType.LinkedList       => new DoublyLinkedList<T>(),
-            CollectionType.BinarySearchTree => new GenericArray<T>(), // vervangen in stap 3
+            CollectionType.BinarySearchTree => new BinarySearchTree<T>(),
             CollectionType.HashMap          => new GenericArray<T>(), // vervangen in stap 4
             _                               => new GenericArray<T>()
         };
