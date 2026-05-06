@@ -9,6 +9,9 @@ public class TaskItem : IEquatable<TaskItem>, IComparable<TaskItem>
     public TaskStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
 
+    // Sprint 2: taaktoewijzing
+    public int? AssignedUserId { get; set; }
+
     public bool Equals(TaskItem? other)
     {
         if (other is null) return false;
@@ -24,6 +27,7 @@ public class TaskItem : IEquatable<TaskItem>, IComparable<TaskItem>
     public override string ToString()
     {
         string state = Completed ? "X" : " ";
-        return $"{Id}. {Description} [{state}] | Priority: {Priority} | Status: {Status} | Created: {CreatedAt:yyyy-MM-dd}";
+        string assigned = AssignedUserId.HasValue ? $" | Toegewezen aan: #{AssignedUserId}" : "";
+        return $"{Id}. {Description} [{state}] | {Priority} | {Status} | {CreatedAt:yyyy-MM-dd}{assigned}";
     }
 }
