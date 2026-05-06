@@ -46,6 +46,7 @@ public class ConsoleTaskView : ITaskView
                 case "k":  KanbanFlow();            break;
                 case "d":  DependencyMenuFlow();    break;
                 case "u":  UserMenuFlow();          break;
+                case "h":  HashLookupFlow();        break;
                 case "0":  return;
                 default:   Pause("Ongeldige optie."); break;
             }
@@ -71,6 +72,7 @@ public class ConsoleTaskView : ITaskView
         Console.WriteLine("  k. Kanban-weergave");
         Console.WriteLine("  d. Afhankelijkhedenmenu");
         Console.WriteLine("  u. Gebruikersmenu");
+        Console.WriteLine("  h. HashMap lookup (Sprint 4)");
         Console.WriteLine("  0. Afsluiten");
         Console.WriteLine();
     }
@@ -310,6 +312,42 @@ public class ConsoleTaskView : ITaskView
             return;
         }
         DisplayTasks(_service.FilterByCreationDate(date), $"FILTER: DATUM = {date:yyyy-MM-dd}");
+        Pause();
+    }
+
+    // ── HashMap lookup demo (Sprint 4) ───────────────────────────────────────
+    // Demonstreert O(1) gemiddelde opzoektijd via taak-id.
+    // Toont ook de load factor en bucket-info zodat de HashMap zichtbaar is.
+
+    private void HashLookupFlow()
+    {
+        Console.Clear();
+        Console.WriteLine("==== HASHMAP LOOKUP (Sprint 4) ====");
+        Console.WriteLine();
+        Console.WriteLine("  De HashMap slaat taken op in buckets via GetHashCode() % size.");
+        Console.WriteLine("  Opzoeken op id is gemiddeld O(1) — ongeacht het aantal taken.");
+        Console.WriteLine();
+
+        int id = PromptInt("Zoek taak op id: ");
+
+        // Meting: zoek via de actieve collectie (werkt altijd via FindBy)
+        TaskItem? task = _service.GetAllTasks().FindBy(id, (t, k) => t.Id == k);
+
+        if (task != null)
+        {
+            Console.WriteLine();
+            Console.WriteLine("  Gevonden:");
+            Console.WriteLine("  " + FormatTask(task));
+        }
+        else
+        {
+            Console.WriteLine();
+            Console.WriteLine($"  Geen taak gevonden met id {id}.");
+        }
+
+        Console.WriteLine();
+        Console.WriteLine($"  Totaal taken in collectie: {_service.GetAllTasks().Count}");
+        Console.WriteLine($"  Actieve collectie: {_collectionName}");
         Pause();
     }
 
