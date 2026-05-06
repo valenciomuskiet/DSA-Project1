@@ -26,6 +26,22 @@ De lagen hangen alleen af van interfaces, nooit van concrete klassen. De `Collec
 
 ---
 
+## Setup
+
+Zorg dat .NET 10 SDK geïnstalleerd is. Voeg het testproject eenmalig toe aan de solution:
+
+```bash
+dotnet sln add Project1.Tests/Project1.Tests.csproj
+```
+
+Herstel alle packages (inclusief xUnit):
+
+```bash
+dotnet restore
+```
+
+---
+
 ## Opstarten
 
 ```bash
