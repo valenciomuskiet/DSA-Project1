@@ -10,11 +10,18 @@ public class TaskService : ITaskService
     private readonly ITaskRepository _repository;
     private readonly IMyCollection<TaskItem> _tasks;
 
+    // Users worden altijd in een DoublyLinkedList bewaard (Sprint 2 vereiste).
+    // De rest van de applicatie ziet alleen IMyCollection<User>.
+    private readonly IMyCollection<User> _users;
+
     public TaskService(ITaskRepository repository)
     {
         _repository = repository;
         _tasks = _repository.LoadTasks();
+        _users = _repository.LoadUsers();
     }
+
+    // ── Taken ────────────────────────────────────────────────────────────────
 
     public IMyCollection<TaskItem> GetAllTasks() => _tasks;
 
@@ -25,7 +32,7 @@ public class TaskService : ITaskService
 
         TaskItem item = new TaskItem
         {
-            Id = GetNextId(),
+            Id = GetNextTaskId(),
             Description = description.Trim(),
             Completed = false,
             Priority = priority,
@@ -40,7 +47,7 @@ public class TaskService : ITaskService
 
     public bool UpdateTask(int id, string newDescription, TaskPriority newPriority, TaskStatus newStatus)
     {
-        TaskItem? task = FindById(id);
+        TaskItem? task = FindTaskById(id);
         if (task == null || string.IsNullOrWhiteSpace(newDescription))
             return false;
 
@@ -56,22 +63,18 @@ public class TaskService : ITaskService
 
     public bool RemoveTask(int id)
     {
-        TaskItem? task = FindById(id);
-        if (task == null)
-            return false;
+        TaskItem? task = FindTaskById(id);
+        if (task == null) return false;
 
         bool removed = _tasks.Remove(task);
-        if (removed)
-            _repository.SaveTasks(_tasks);
-
+        if (removed) _repository.SaveTasks(_tasks);
         return removed;
     }
 
     public bool ToggleTaskCompletion(int id)
     {
-        TaskItem? task = FindById(id);
-        if (task == null)
-            return false;
+        TaskItem? task = FindTaskById(id);
+        if (task == null) return false;
 
         task.Completed = !task.Completed;
         task.Status = task.Completed ? TaskStatus.Done : TaskStatus.Todo;
@@ -105,11 +108,90 @@ public class TaskService : ITaskService
         _repository.SaveTasks(_tasks);
     }
 
-    // ── Helpers ─────────────────────────────────────────────────────────────
+    // ── Gebruikersbeheer (Sprint 2) ───────────────────────────────────────────
 
-    private TaskItem? FindById(int id)
-        => _tasks.FindBy(id, (task, key) => task.Id == key);
+    public IMyCollection<User> GetAllUsers() => _users;
 
-    private int GetNextId()
+    public bool AddUser(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return false;
+
+        User user = new User
+        {
+            Id = GetNextUserId(),
+            Name = name.Trim()
+        };
+
+        _users.Add(user);
+        _repository.SaveUsers(_users);
+        return true;
+    }
+
+    public bool RemoveUser(int userId)
+    {
+        User? user = FindUserById(userId);
+        if (user == null) return false;
+
+        // Verwijder toewijzingen aan deze user
+        IMyIterator<TaskItem> it = _tasks.GetIterator();
+        while (it.HasNext())
+        {
+            TaskItem task = it.Next();
+            if (task.AssignedUserId == userId)
+                task.AssignedUserId = null;
+        }
+
+        bool removed = _users.Remove(user);
+        if (removed)
+        {
+            _repository.SaveUsers(_users);
+            _repository.SaveTasks(_tasks);
+        }
+        return removed;
+    }
+
+    // ── Taaktoewijzing (Sprint 2) ─────────────────────────────────────────────
+    // Per-user modification rights: alleen de toegewezen user mag een taak wijzigen.
+    // Dit wordt gecontroleerd via CanModify() vanuit de View.
+
+    public bool AssignTask(int taskId, int userId)
+    {
+        TaskItem? task = FindTaskById(taskId);
+        User? user = FindUserById(userId);
+        if (task == null || user == null) return false;
+
+        task.AssignedUserId = userId;
+        _tasks.Dirty = true;
+        _repository.SaveTasks(_tasks);
+        return true;
+    }
+
+    public bool UnassignTask(int taskId)
+    {
+        TaskItem? task = FindTaskById(taskId);
+        if (task == null) return false;
+
+        task.AssignedUserId = null;
+        _tasks.Dirty = true;
+        _repository.SaveTasks(_tasks);
+        return true;
+    }
+
+    public IMyCollection<TaskItem> GetTasksByUser(int userId)
+        => _tasks.Filter(t => t.AssignedUserId == userId);
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private TaskItem? FindTaskById(int id)
+        => _tasks.FindBy(id, (t, k) => t.Id == k);
+
+    private User? FindUserById(int id)
+        => _users.FindBy(id, (u, k) => u.Id == k);
+
+    private int GetNextTaskId()
         => _tasks.Reduce(0, (max, t) => t.Id > max ? t.Id : max) + 1;
+
+    private int GetNextUserId()
+        => _users.Reduce(0, (max, u) => u.Id > max ? u.Id : max) + 1;
 }

@@ -21,4 +21,12 @@ public interface ITaskService
     IMyCollection<TaskItem> FilterByCreationDate(DateTime date);
     void SortByCreatedAtAscending();
     void SortByPriorityDescending();
+
+    // Sprint 2: gebruikersbeheer & taaktoewijzing
+    IMyCollection<User> GetAllUsers();
+    bool AddUser(string name);
+    bool RemoveUser(int userId);
+    bool AssignTask(int taskId, int userId);
+    bool UnassignTask(int taskId);
+    IMyCollection<TaskItem> GetTasksByUser(int userId);
 }
