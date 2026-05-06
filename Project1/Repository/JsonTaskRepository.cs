@@ -7,35 +7,44 @@ namespace Project1.Repository;
 public class JsonTaskRepository : ITaskRepository
 {
     private readonly string _filePath;
+    private readonly CollectionFactory.CollectionType _collectionType;
 
-    public JsonTaskRepository(string filePath)
+    public JsonTaskRepository(string filePath, CollectionFactory.CollectionType collectionType)
     {
         _filePath = filePath;
+        _collectionType = collectionType;
     }
 
-    public GenericArray<TaskItem> LoadTasks()
+    public IMyCollection<TaskItem> LoadTasks()
     {
+        IMyCollection<TaskItem> collection = CollectionFactory.Create<TaskItem>(_collectionType);
+
         if (!File.Exists(_filePath))
-            return new GenericArray<TaskItem>();
+            return collection;
 
         try
         {
             string json = File.ReadAllText(_filePath);
             TaskItem[]? tasks = JsonSerializer.Deserialize<TaskItem[]>(json);
 
-            if (tasks == null || tasks.Length == 0)
-                return new GenericArray<TaskItem>();
+            if (tasks == null)
+                return collection;
 
-            return new GenericArray<TaskItem>(tasks, tasks.Length - 1);
+            foreach (TaskItem task in tasks)
+                collection.Add(task);
         }
         catch
         {
-            return new GenericArray<TaskItem>();
+            // Bij corrupt bestand: lege collectie teruggeven
         }
+
+        return collection;
     }
 
-    public void SaveTasks(GenericArray<TaskItem> tasks)
+    public void SaveTasks(IMyCollection<TaskItem> tasks)
     {
+        // ToArray() werkt op elke IMyCollection-implementatie.
+        // JSON-serialisatie ziet altijd een gewone array, ongeacht de interne structuur.
         TaskItem[] snapshot = tasks.ToArray();
 
         string json = JsonSerializer.Serialize(snapshot, new JsonSerializerOptions
