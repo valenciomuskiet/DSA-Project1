@@ -40,7 +40,7 @@ public static class CollectionFactory
             CollectionType.Array            => new GenericArray<T>(),
             CollectionType.LinkedList       => new DoublyLinkedList<T>(),
             CollectionType.BinarySearchTree => new BinarySearchTree<T>(),
-            CollectionType.HashMap          => new GenericArray<T>(), // vervangen in stap 4
+            CollectionType.HashMap          => new MyHashMap<T>(),
             _                               => new GenericArray<T>()
         };
     }
