@@ -156,20 +156,7 @@ public void Sort(Comparison<T> comparison)
         Dirty = true;
     }
 
-    public void Swap(int i, int j)
-    {
-        ValidateIndex(i);
-        ValidateIndex(j);
 
-        T temp = _data[i];
-        _data[i] = _data[j];
-        _data[j] = temp;
-        Dirty = true;
-    }
-
-
-
- 
     public R Reduce<R>(R initial, Func<R, T, R> accumulator)
     {
         R result = initial;
