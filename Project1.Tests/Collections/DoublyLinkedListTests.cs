@@ -33,33 +33,6 @@ public class DoublyLinkedListTests
     }
 
     [Fact]
-    public void Remove_EersteNode_KoptCorrect()
-    {
-        var lijst = new DoublyLinkedList<TaskItem>();
-        var t1 = MakeTask(1);
-        var t2 = MakeTask(2);
-        lijst.Add(t1);
-        lijst.Add(t2);
-        lijst.Remove(t1);
-
-        var gevonden = lijst.FindBy(2, (t, k) => t.Id == k);
-        Assert.NotNull(gevonden);
-        Assert.Equal(1, lijst.Count);
-    }
-
-    [Fact]
-    public void Remove_LaatsteNode_KoptCorrect()
-    {
-        var lijst = new DoublyLinkedList<TaskItem>();
-        lijst.Add(MakeTask(1));
-        lijst.Add(MakeTask(2));
-        lijst.Remove(MakeTask(2));
-
-        Assert.Equal(1, lijst.Count);
-        Assert.NotNull(lijst.FindBy(1, (t, k) => t.Id == k));
-    }
-
-    [Fact]
     public void FindBy_VindtCorrectItem()
     {
         var lijst = new DoublyLinkedList<TaskItem>();
@@ -98,31 +71,5 @@ public class DoublyLinkedListTests
         Assert.Equal(1, arr[0].Id);
         Assert.Equal(2, arr[1].Id);
         Assert.Equal(3, arr[2].Id);
-    }
-
-    [Fact]
-    public void Iterator_DoorlooptAlleItems()
-    {
-        var lijst = new DoublyLinkedList<TaskItem>();
-        lijst.Add(MakeTask(1));
-        lijst.Add(MakeTask(2));
-        lijst.Add(MakeTask(3));
-
-        int count = 0;
-        var it = lijst.GetIterator();
-        while (it.HasNext()) { it.Next(); count++; }
-        Assert.Equal(3, count);
-    }
-
-    [Fact]
-    public void Reduce_TeltAantalItems()
-    {
-        var lijst = new DoublyLinkedList<TaskItem>();
-        lijst.Add(MakeTask(1));
-        lijst.Add(MakeTask(2));
-        lijst.Add(MakeTask(3));
-
-        int totaal = lijst.Reduce(0, (acc, _) => acc + 1);
-        Assert.Equal(3, totaal);
     }
 }

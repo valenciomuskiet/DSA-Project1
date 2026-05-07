@@ -1,17 +1,8 @@
 namespace Project1.Collections;
 
-/// <summary>
-/// Doubly Linked List implementatie van IMyCollection.
-/// Gebaseerd op slides Unit 3 (week 6-7):
-///   - Node heeft Value, Next en Previous (slide 30-31)
-///   - AddFirst, AddLast, InsertAfter (slides 33-35)
-///   - AddSorted voor geordende invoeging (slide 36)
-///   - Delete via het aanpassen van prev/next-pointers (slide 37)
-///   - Search lineair van First naar Last (slide 32)
-/// </summary>
+
 public class DoublyLinkedList<T> : IMyCollection<T> where T : IEquatable<T>, IComparable<T>
 {
-    // ── Interne Node-klasse (slides Unit 3, slide 30) ────────────────────────
     private class Node
     {
         public T Value;
@@ -33,7 +24,6 @@ public class DoublyLinkedList<T> : IMyCollection<T> where T : IEquatable<T>, ICo
     public bool Dirty { get; set; }
     public int Count => _count;
 
-    // ── AddFirst (slide 33) ──────────────────────────────────────────────────
     private void AddFirst(T value)
     {
         Node newNode = new Node(value);
@@ -54,7 +44,6 @@ public class DoublyLinkedList<T> : IMyCollection<T> where T : IEquatable<T>, ICo
         Dirty = true;
     }
 
-    // ── AddLast (slide 34) ───────────────────────────────────────────────────
     private void AddLast(T value)
     {
         Node newNode = new Node(value);
@@ -75,7 +64,6 @@ public class DoublyLinkedList<T> : IMyCollection<T> where T : IEquatable<T>, ICo
         Dirty = true;
     }
 
-    // ── InsertAfter (slide 35) ───────────────────────────────────────────────
     private void InsertAfter(Node node, T value)
     {
         Node newNode = new Node(value);
@@ -92,13 +80,11 @@ public class DoublyLinkedList<T> : IMyCollection<T> where T : IEquatable<T>, ICo
         Dirty = true;
     }
 
-    // ── Add: voegt toe aan het einde (IMyCollection vereiste) ────────────────
     public void Add(T item)
     {
         AddLast(item);
     }
 
-    // ── Delete (slide 37) ────────────────────────────────────────────────────
     public bool Remove(T item)
     {
         Node? nodeToDelete = FindNode(item);
@@ -122,7 +108,6 @@ public class DoublyLinkedList<T> : IMyCollection<T> where T : IEquatable<T>, ICo
         return true;
     }
 
-    // ── Search (slide 32) ────────────────────────────────────────────────────
     public T? FindBy<K>(K key, Func<T, K, bool> comparer)
     {
         Node? current = _first;
@@ -135,7 +120,6 @@ public class DoublyLinkedList<T> : IMyCollection<T> where T : IEquatable<T>, ICo
         return default;
     }
 
-    // ── Filter ───────────────────────────────────────────────────────────────
     public IMyCollection<T> Filter(Func<T, bool> predicate)
     {
         DoublyLinkedList<T> result = new DoublyLinkedList<T>();
@@ -149,8 +133,6 @@ public class DoublyLinkedList<T> : IMyCollection<T> where T : IEquatable<T>, ICo
         return result;
     }
 
-    // ── Sort: insertion sort op de linked list (Unit 2 slides) ───────────────
-    // Strategie: kopieer naar array, sorteer, herbouw de lijst
     public void Sort(Comparison<T> comparison)
     {
         if (_count <= 1) return;
@@ -170,7 +152,6 @@ public class DoublyLinkedList<T> : IMyCollection<T> where T : IEquatable<T>, ICo
             arr[j + 1] = key;
         }
 
-        // Herbouw de lijst
         Clear();
         foreach (T item in arr)
             AddLast(item);
@@ -178,7 +159,6 @@ public class DoublyLinkedList<T> : IMyCollection<T> where T : IEquatable<T>, ICo
         Dirty = true;
     }
 
-    // ── Reduce ───────────────────────────────────────────────────────────────
     public R Reduce<R>(R initial, Func<R, T, R> accumulator)
     {
         R result = initial;
@@ -191,13 +171,11 @@ public class DoublyLinkedList<T> : IMyCollection<T> where T : IEquatable<T>, ICo
         return result;
     }
 
-    // ── Iterator ─────────────────────────────────────────────────────────────
     public IMyIterator<T> GetIterator()
     {
         return new DoublyLinkedListIterator(this);
     }
 
-    // ── ToArray ──────────────────────────────────────────────────────────────
     public T[] ToArray()
     {
         T[] result = new T[_count];
@@ -211,7 +189,7 @@ public class DoublyLinkedList<T> : IMyCollection<T> where T : IEquatable<T>, ICo
         return result;
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
+    // Helpers 
     private Node? FindNode(T item)
     {
         Node? current = _first;
@@ -231,7 +209,6 @@ public class DoublyLinkedList<T> : IMyCollection<T> where T : IEquatable<T>, ICo
         _count = 0;
     }
 
-    // ── Iterator-klasse (IMyIterator, slides Unit 3) ─────────────────────────
     private class DoublyLinkedListIterator : IMyIterator<T>
     {
         private readonly DoublyLinkedList<T> _list;

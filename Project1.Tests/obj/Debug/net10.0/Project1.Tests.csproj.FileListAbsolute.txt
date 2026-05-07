@@ -1,9 +1,3 @@
-/Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/obj/Debug/net10.0/Project1.Tests.csproj.AssemblyReference.cache
-/Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/obj/Debug/net10.0/Project1.Tests.GeneratedMSBuildEditorConfig.editorconfig
-/Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/obj/Debug/net10.0/Project1.Tests.AssemblyInfoInputs.cache
-/Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/obj/Debug/net10.0/Project1.Tests.AssemblyInfo.cs
-/Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/obj/Debug/net10.0/Project1.Tests.csproj.CoreCompileInputs.cache
-/Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/obj/Debug/net10.0/Project1.Tests.sourcelink.json
 /Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/bin/Debug/net10.0/.msCoverageSourceRootsMapping_Project1.Tests
 /Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/bin/Debug/net10.0/xunit.abstractions.dll
 /Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/bin/Debug/net10.0/Project1.deps.json
@@ -94,6 +88,12 @@
 /Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/bin/Debug/net10.0/zh-Hant/Microsoft.VisualStudio.TestPlatform.Common.resources.dll
 /Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/bin/Debug/net10.0/Project1.dll
 /Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/bin/Debug/net10.0/Project1.pdb
+/Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/obj/Debug/net10.0/Project1.Tests.csproj.AssemblyReference.cache
+/Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/obj/Debug/net10.0/Project1.Tests.GeneratedMSBuildEditorConfig.editorconfig
+/Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/obj/Debug/net10.0/Project1.Tests.AssemblyInfoInputs.cache
+/Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/obj/Debug/net10.0/Project1.Tests.AssemblyInfo.cs
+/Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/obj/Debug/net10.0/Project1.Tests.csproj.CoreCompileInputs.cache
+/Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/obj/Debug/net10.0/Project1.Tests.sourcelink.json
 /Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/obj/Debug/net10.0/Project1.858B0852.Up2Date
 /Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/obj/Debug/net10.0/Project1.Tests.dll
 /Users/valenciomuskiet/Projects/DSA-Project1/Project1.Tests/obj/Debug/net10.0/refint/Project1.Tests.dll

@@ -1,31 +1,95 @@
 [
   {
-    "Id": 1,
-    "Description": "2",
-    "Completed": true,
-    "Priority": 2,
-    "Status": 3,
-    "CreatedAt": "2026-03-31T08:52:00.128767+02:00",
+    "Id": 12,
+    "Description": "sweet liberty my leggg!!!",
+    "Completed": false,
+    "Priority": 3,
+    "Status": 2,
+    "CreatedAt": "2026-05-07T15:03:04.622066+02:00",
     "AssignedUserId": null,
+    "DependsOn": []
+  },
+  {
+    "Id": 1,
+    "Description": "valenciotaak",
+    "Completed": false,
+    "Priority": 2,
+    "Status": 1,
+    "CreatedAt": "2026-03-31T08:52:00.128767+02:00",
+    "AssignedUserId": 3,
     "DependsOn": []
   },
   {
     "Id": 3,
     "Description": "mynewtask2",
+    "Completed": true,
+    "Priority": 2,
+    "Status": 3,
+    "CreatedAt": "2026-03-31T08:55:28.842565+02:00",
+    "AssignedUserId": 5,
+    "DependsOn": []
+  },
+  {
+    "Id": 7,
+    "Description": "takitaki",
     "Completed": false,
     "Priority": 2,
-    "Status": 2,
-    "CreatedAt": "2026-03-31T08:55:28.842565+02:00",
+    "Status": 1,
+    "CreatedAt": "2026-05-07T13:57:18.857986+02:00",
     "AssignedUserId": null,
     "DependsOn": []
   },
   {
-    "Id": 4,
-    "Description": "taskyupdated",
+    "Id": 11,
+    "Description": "tasktaskadjusted",
+    "Completed": true,
+    "Priority": 2,
+    "Status": 3,
+    "CreatedAt": "2026-05-07T14:45:48.662491+02:00",
+    "AssignedUserId": null,
+    "DependsOn": []
+  },
+  {
+    "Id": 13,
+    "Description": "Presentatie nieuw",
     "Completed": false,
     "Priority": 2,
     "Status": 2,
-    "CreatedAt": "2026-04-21T12:32:10.382666+02:00",
+    "CreatedAt": "2026-05-07T15:26:55.374086+02:00",
+    "AssignedUserId": null,
+    "DependsOn": [
+      7
+    ]
+  },
+  {
+    "Id": 6,
+    "Description": "taak bst",
+    "Completed": false,
+    "Priority": 1,
+    "Status": 1,
+    "CreatedAt": "2026-05-07T13:33:17.373558+02:00",
+    "AssignedUserId": null,
+    "DependsOn": [
+      7
+    ]
+  },
+  {
+    "Id": 8,
+    "Description": "taaktest",
+    "Completed": false,
+    "Priority": 1,
+    "Status": 1,
+    "CreatedAt": "2026-05-07T14:17:48.22603+02:00",
+    "AssignedUserId": null,
+    "DependsOn": []
+  },
+  {
+    "Id": 9,
+    "Description": "hash1",
+    "Completed": false,
+    "Priority": 1,
+    "Status": 1,
+    "CreatedAt": "2026-05-07T14:27:04.412522+02:00",
     "AssignedUserId": null,
     "DependsOn": []
   }

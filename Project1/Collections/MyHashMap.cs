@@ -1,18 +1,9 @@
 namespace Project1.Collections;
 
-/// <summary>
-/// Hash Map implementatie van IMyCollection via separate chaining.
-/// Gebaseerd op slides Unit 4 (week 8-9):
-///   - Hash functie: GetHashCode() % size (slide 9-10)
-///   - Separate chaining met linked lists als buckets (slides 19-22)
-///   - Load factor bewaking + resize bij overschrijding drempel 0.7 (slide 24)
-///   - Gemiddeld O(1) voor Add, Remove, FindBy (slide 26)
-/// </summary>
 public class MyHashMap<T> : IMyCollection<T>
     where T : IEquatable<T>, IComparable<T>
 {
-    // ── Interne chain-node (slides Unit 4, slide 19-22) ──────────────────────
-    // Elke bucket is een linked list van nodes — separate chaining
+
     private class ChainNode
     {
         public T Value;
@@ -34,14 +25,12 @@ public class MyHashMap<T> : IMyCollection<T>
 
     public MyHashMap(int initialCapacity = 11)
     {
-        // Kies een priemgetal als begingrootte voor betere spreiding (slide 11)
         _buckets = new ChainNode?[initialCapacity];
         _count = 0;
         Dirty = false;
     }
 
-    // ── Hash functie (slides 9-10) ────────────────────────────────────────────
-    // index = |GetHashCode()| % arraySize
+
     private int GetBucketIndex(T item)
     {
         int hash = item.GetHashCode();
@@ -49,17 +38,14 @@ public class MyHashMap<T> : IMyCollection<T>
         return hash % _buckets.Length;
     }
 
-    // ── Add met load factor check (slide 24) ──────────────────────────────────
     public void Add(T item)
     {
-        // Resize als load factor drempel overschreden wordt
         double loadFactor = (double)(_count + 1) / _buckets.Length;
         if (loadFactor > LoadFactorThreshold)
             Resize();
 
         int index = GetBucketIndex(item);
 
-        // Voeg toe aan het begin van de chain (O(1))
         ChainNode newNode = new ChainNode(item);
         newNode.Next = _buckets[index];
         _buckets[index] = newNode;
@@ -68,7 +54,6 @@ public class MyHashMap<T> : IMyCollection<T>
         Dirty = true;
     }
 
-    // ── Remove (slide 22) ─────────────────────────────────────────────────────
     public bool Remove(T item)
     {
         int index = GetBucketIndex(item);
@@ -95,10 +80,8 @@ public class MyHashMap<T> : IMyCollection<T>
         return false;
     }
 
-    // ── FindBy: O(1) gemiddeld (slide 26) ─────────────────────────────────────
     public T? FindBy<K>(K key, Func<T, K, bool> comparer)
     {
-        // Doorzoek alle buckets — comparer bepaalt de match, niet de hash
         for (int i = 0; i < _buckets.Length; i++)
         {
             ChainNode? current = _buckets[i];
@@ -112,7 +95,6 @@ public class MyHashMap<T> : IMyCollection<T>
         return default;
     }
 
-    // ── Filter ───────────────────────────────────────────────────────────────
     public IMyCollection<T> Filter(Func<T, bool> predicate)
     {
         MyHashMap<T> result = new MyHashMap<T>();
@@ -129,12 +111,10 @@ public class MyHashMap<T> : IMyCollection<T>
         return result;
     }
 
-    // ── Sort: kopieer naar array, insertion sort, herbouw ────────────────────
     public void Sort(Comparison<T> comparison)
     {
         T[] arr = ToArray();
 
-        // Insertion sort (Unit 2 slides)
         for (int i = 1; i < arr.Length; i++)
         {
             T key = arr[i];
@@ -147,7 +127,6 @@ public class MyHashMap<T> : IMyCollection<T>
             arr[j + 1] = key;
         }
 
-        // Herbouw de hash map met gesorteerde volgorde
         _buckets = new ChainNode?[_buckets.Length];
         _count = 0;
         for (int i = 0; i < arr.Length; i++)
@@ -156,7 +135,6 @@ public class MyHashMap<T> : IMyCollection<T>
         Dirty = true;
     }
 
-    // ── Reduce ───────────────────────────────────────────────────────────────
     public R Reduce<R>(R initial, Func<R, T, R> accumulator)
     {
         R result = initial;
@@ -172,7 +150,6 @@ public class MyHashMap<T> : IMyCollection<T>
         return result;
     }
 
-    // ── ToArray ───────────────────────────────────────────────────────────────
     public T[] ToArray()
     {
         T[] result = new T[_count];
@@ -189,14 +166,12 @@ public class MyHashMap<T> : IMyCollection<T>
         return result;
     }
 
-    // ── Iterator ──────────────────────────────────────────────────────────────
     public IMyIterator<T> GetIterator()
     {
         return new HashMapIterator(this);
     }
 
-    // ── Resize + rehash (slide 25) ────────────────────────────────────────────
-    // Verdubbel de bucketgrootte en herplaats alle elementen
+
     private void Resize()
     {
         int newSize = NextPrime(_buckets.Length * 2);
@@ -216,7 +191,6 @@ public class MyHashMap<T> : IMyCollection<T>
         }
     }
 
-    // Zoek het eerstvolgende priemgetal >= n voor betere hashspreiding (slide 11)
     private int NextPrime(int n)
     {
         if (n < 2) return 2;
@@ -234,7 +208,6 @@ public class MyHashMap<T> : IMyCollection<T>
         return true;
     }
 
-    // ── Iterator-klasse ───────────────────────────────────────────────────────
     private class HashMapIterator : IMyIterator<T>
     {
         private readonly T[] _items;

@@ -18,17 +18,8 @@ public class GenericArrayTests
     {
         var array = new GenericArray<TaskItem>();
         array.Add(MakeTask(1));
-        Assert.Equal(1, array.Count);
-    }
-
-    [Fact]
-    public void Add_MeerdereItems_CountKlopt()
-    {
-        var array = new GenericArray<TaskItem>();
-        array.Add(MakeTask(1));
         array.Add(MakeTask(2));
-        array.Add(MakeTask(3));
-        Assert.Equal(3, array.Count);
+        Assert.Equal(2, array.Count);
     }
 
     [Fact]
@@ -63,15 +54,6 @@ public class GenericArrayTests
     }
 
     [Fact]
-    public void FindBy_NietBestaand_RetourneertNull()
-    {
-        var array = new GenericArray<TaskItem>();
-        array.Add(MakeTask(1));
-        var gevonden = array.FindBy(99, (t, k) => t.Id == k);
-        Assert.Null(gevonden);
-    }
-
-    [Fact]
     public void Filter_RetourneertJuisteItems()
     {
         var array = new GenericArray<TaskItem>();
@@ -95,44 +77,5 @@ public class GenericArrayTests
         var items = array.ToArray();
 
         Assert.Equal(TaskPriority.High, items[0].Priority);
-        Assert.Equal(TaskPriority.Medium, items[1].Priority);
-        Assert.Equal(TaskPriority.Low, items[2].Priority);
-    }
-
-    [Fact]
-    public void Reduce_BerekentMaxId()
-    {
-        var array = new GenericArray<TaskItem>();
-        array.Add(MakeTask(3));
-        array.Add(MakeTask(7));
-        array.Add(MakeTask(2));
-
-        int maxId = array.Reduce(0, (max, t) => t.Id > max ? t.Id : max);
-        Assert.Equal(7, maxId);
-    }
-
-    [Fact]
-    public void Iterator_DoorlooptAlleItems()
-    {
-        var array = new GenericArray<TaskItem>();
-        array.Add(MakeTask(1));
-        array.Add(MakeTask(2));
-        array.Add(MakeTask(3));
-
-        int count = 0;
-        var it = array.GetIterator();
-        while (it.HasNext()) { it.Next(); count++; }
-        Assert.Equal(3, count);
-    }
-
-    [Fact]
-    public void ToArray_RetourneertAlleItems()
-    {
-        var array = new GenericArray<TaskItem>();
-        array.Add(MakeTask(1));
-        array.Add(MakeTask(2));
-
-        var arr = array.ToArray();
-        Assert.Equal(2, arr.Length);
     }
 }

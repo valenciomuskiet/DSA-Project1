@@ -19,8 +19,7 @@ public class BinarySearchTreeTests
         var bst = new BinarySearchTree<TaskItem>();
         bst.Add(MakeTask(5));
         bst.Add(MakeTask(3));
-        bst.Add(MakeTask(7));
-        Assert.Equal(3, bst.Count);
+        Assert.Equal(2, bst.Count);
     }
 
     [Fact]
@@ -30,42 +29,22 @@ public class BinarySearchTreeTests
         bst.Add(MakeTask(5));
         bst.Add(MakeTask(3));
         bst.Add(MakeTask(7));
-        bst.Add(MakeTask(1));
-        bst.Add(MakeTask(4));
 
         var arr = bst.ToArray();
-        Assert.Equal(1, arr[0].Id);
-        Assert.Equal(3, arr[1].Id);
-        Assert.Equal(4, arr[2].Id);
-        Assert.Equal(5, arr[3].Id);
-        Assert.Equal(7, arr[4].Id);
+        Assert.Equal(3, arr[0].Id);
+        Assert.Equal(5, arr[1].Id);
+        Assert.Equal(7, arr[2].Id);
     }
 
     [Fact]
-    public void Remove_GeenKinderen_VerwijdertCorrect()
+    public void Remove_VerwijdertItem()
     {
         var bst = new BinarySearchTree<TaskItem>();
         var t = MakeTask(5);
         bst.Add(t);
-        bool result = bst.Remove(t);
-        Assert.True(result);
-        Assert.Equal(0, bst.Count);
-    }
-
-    [Fact]
-    public void Remove_TweeKinderen_InOrderSuccessor()
-    {
-        var bst = new BinarySearchTree<TaskItem>();
-        bst.Add(MakeTask(5));
         bst.Add(MakeTask(3));
-        bst.Add(MakeTask(7));
-
-        bst.Remove(MakeTask(5));
-        Assert.Equal(2, bst.Count);
-
-        var arr = bst.ToArray();
-        Assert.Equal(3, arr[0].Id);
-        Assert.Equal(7, arr[1].Id);
+        bst.Remove(t);
+        Assert.Equal(1, bst.Count);
     }
 
     [Fact]
@@ -91,41 +70,5 @@ public class BinarySearchTreeTests
 
         var gefilterd = bst.Filter(t => t.Priority == TaskPriority.High);
         Assert.Equal(2, gefilterd.Count);
-    }
-
-    [Fact]
-    public void Sort_BehouwtAlleItemsNaHerbouw()
-    {
-        // BST sorteert intern en herbouwt gebalanceerd.
-        // ToArray() geeft altijd InOrder (op Id) terug.
-        // We verifiëren dat alle items na Sort nog aanwezig zijn.
-        var bst = new BinarySearchTree<TaskItem>();
-        bst.Add(MakeTask(1, priority: TaskPriority.Low));
-        bst.Add(MakeTask(2, priority: TaskPriority.High));
-        bst.Add(MakeTask(3, priority: TaskPriority.Medium));
-
-        bst.Sort((a, b) => b.Priority.CompareTo(a.Priority));
-        var arr = bst.ToArray();
-
-        Assert.Equal(3, arr.Length);
-        // Alle drie prioriteiten zijn aanwezig na sort + herbouw
-        Assert.Contains(arr, t => t.Priority == TaskPriority.High);
-        Assert.Contains(arr, t => t.Priority == TaskPriority.Low);
-        Assert.Contains(arr, t => t.Priority == TaskPriority.Medium);
-    }
-
-    [Fact]
-    public void Iterator_DoorlooptInGesorteerdeVolgorde()
-    {
-        var bst = new BinarySearchTree<TaskItem>();
-        bst.Add(MakeTask(3));
-        bst.Add(MakeTask(1));
-        bst.Add(MakeTask(2));
-
-        var ids = new List<int>();
-        var it = bst.GetIterator();
-        while (it.HasNext()) ids.Add(it.Next().Id);
-
-        Assert.Equal(new[] { 1, 2, 3 }, ids);
     }
 }

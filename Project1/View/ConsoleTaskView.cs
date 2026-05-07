@@ -53,7 +53,7 @@ public class ConsoleTaskView : ITaskView
         }
     }
 
-    // ── Menu ──────────────────────────────────────────────────────────────────
+    //  Menu
 
     private void ShowMenu()
     {
@@ -77,7 +77,7 @@ public class ConsoleTaskView : ITaskView
         Console.WriteLine();
     }
 
-    // ── Taken weergeven ───────────────────────────────────────────────────────
+    // Taken weergeven 
 
     private void DisplayTasks(IMyCollection<TaskItem> tasks, string title)
     {
@@ -110,7 +110,7 @@ public class ConsoleTaskView : ITaskView
         return $"{task}{userLabel}{blocked}";
     }
 
-    // ── Kanban-weergave (Sprint 3) ────────────────────────────────────────────
+    // Kanban-weergave 
 
     private void KanbanFlow()
     {
@@ -178,7 +178,7 @@ public class ConsoleTaskView : ITaskView
     private bool CanStart(TaskItem task)
         => _service.CanStart(task.Id);
 
-    // ── Afhankelijkhedenmenu (Sprint 3) ───────────────────────────────────────
+    // Afhankelijkhedenmenu
 
     private void DependencyMenuFlow()
     {
@@ -240,7 +240,7 @@ public class ConsoleTaskView : ITaskView
         }
     }
 
-    // ── Taak-flows ────────────────────────────────────────────────────────────
+    // Taak-flows
 
     private void AddTaskFlow()
     {
@@ -315,7 +315,7 @@ public class ConsoleTaskView : ITaskView
         Pause();
     }
 
-    // ── HashMap lookup demo (Sprint 4) ───────────────────────────────────────
+    // ── HashMap lookup 
     // Demonstreert O(1) gemiddelde opzoektijd via taak-id.
     // Toont ook de load factor en bucket-info zodat de HashMap zichtbaar is.
 
@@ -351,7 +351,7 @@ public class ConsoleTaskView : ITaskView
         Pause();
     }
 
-    // ── Gebruikersmenu (Sprint 2) ──────────────────────────────────────────────
+    // Gebruikersmenu 
 
     private void UserMenuFlow()
     {
@@ -429,7 +429,7 @@ public class ConsoleTaskView : ITaskView
         }
     }
 
-    // ── Rechtencheck ──────────────────────────────────────────────────────────
+    //  Rechtencheck 
 
     private bool CanModify(int taskId)
     {
@@ -439,7 +439,7 @@ public class ConsoleTaskView : ITaskView
         return task.AssignedUserId == _currentUser.Id;
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    // Helpers
 
     private string Prompt(string prompt)
     {
