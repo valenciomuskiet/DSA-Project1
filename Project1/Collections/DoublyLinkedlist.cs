@@ -91,17 +91,15 @@ public class DoublyLinkedList<T> : IMyCollection<T> where T : IEquatable<T>, ICo
         if (nodeToDelete == null)
             return false;
 
-        // Pas Previous-pointer aan
         if (nodeToDelete.Previous != null)
             nodeToDelete.Previous.Next = nodeToDelete.Next;
         else
-            _first = nodeToDelete.Next; // nodeToDelete was First
-
-        // Pas Next-pointer aan
+            _first = nodeToDelete.Next; 
+   
         if (nodeToDelete.Next != null)
             nodeToDelete.Next.Previous = nodeToDelete.Previous;
         else
-            _last = nodeToDelete.Previous; // nodeToDelete was Last
+            _last = nodeToDelete.Previous; 
 
         _count--;
         Dirty = true;
@@ -139,7 +137,7 @@ public class DoublyLinkedList<T> : IMyCollection<T> where T : IEquatable<T>, ICo
 
         T[] arr = ToArray();
 
-        // Insertion sort (slides Unit 2)
+        // Insertion sort 
         for (int i = 1; i < arr.Length; i++)
         {
             T key = arr[i];

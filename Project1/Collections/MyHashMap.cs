@@ -18,7 +18,7 @@ public class MyHashMap<T> : IMyCollection<T>
 
     private ChainNode?[] _buckets;
     private int _count;
-    private const double LoadFactorThreshold = 0.7; // slide 24: drempel voor resize
+    private const double LoadFactorThreshold = 0.7;
 
     public bool Dirty { get; set; }
     public int Count => _count;
