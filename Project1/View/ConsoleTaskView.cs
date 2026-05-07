@@ -315,7 +315,7 @@ public class ConsoleTaskView : ITaskView
         Pause();
     }
 
-    // ── HashMap lookup 
+    // HashMap lookup 
     // Demonstreert O(1) gemiddelde opzoektijd via taak-id.
     // Toont ook de load factor en bucket-info zodat de HashMap zichtbaar is.
 
