@@ -18,7 +18,7 @@ public class TaskService : ITaskService
         _users = _repository.LoadUsers();
     }
 
-    // ── Taken ────────────────────────────────────────────────────────────────
+    // Taken 
 
     public IMyCollection<TaskItem> GetAllTasks() => _tasks;
 
@@ -63,7 +63,7 @@ public class TaskService : ITaskService
         TaskItem? task = FindTaskById(id);
         if (task == null) return false;
 
-        // Verwijder deze taak als prereq uit andere taken (geen LINQ)
+   
         IMyIterator<TaskItem> it = _tasks.GetIterator();
         while (it.HasNext())
         {
@@ -124,7 +124,7 @@ public class TaskService : ITaskService
         _repository.SaveTasks(_tasks);
     }
 
-    // ── Gebruikers (Sprint 2) ─────────────────────────────────────────────────
+    // Gebruikers
 
     public IMyCollection<User> GetAllUsers() => _users;
 
@@ -183,11 +183,8 @@ public class TaskService : ITaskService
     public IMyCollection<TaskItem> GetTasksByUser(int userId)
         => _tasks.Filter(t => t.AssignedUserId == userId);
 
-    // ── Taakafhankelijkheden (Sprint 3) ───────────────────────────────────────
+    //  Taakafhankelijkheden 
 
-    /// <summary>
-    /// Voegt een vereiste toe: taskId kan pas starten als prereqId Done is.
-    /// </summary>
     public bool AddDependency(int taskId, int prereqId)
     {
         TaskItem? task = FindTaskById(taskId);
@@ -199,7 +196,7 @@ public class TaskService : ITaskService
         // Voorkom circulaire afhankelijkheid
         if (WouldCreateCycle(taskId, prereqId)) return false;
 
-        // Voeg toe als nog niet aanwezig (geen LINQ)
+        // Voeg toe als nog niet aanwezig
         if (!ContainsId(task.DependsOn, prereqId))
         {
             int[] newDeps = new int[task.DependsOn.Length + 1];
@@ -240,10 +237,7 @@ public class TaskService : ITaskService
         return false;
     }
 
-    /// <summary>
-    /// Een taak kan starten als alle vereiste taken Done zijn.
-    /// Gebaseerd op de BST-logica: zoek elke prereq en controleer status.
-    /// </summary>
+
     public bool CanStart(int taskId)
     {
         TaskItem? task = FindTaskById(taskId);
@@ -258,13 +252,10 @@ public class TaskService : ITaskService
         return true;
     }
 
-    /// <summary>
-    /// Geeft alle taken terug die geblokkeerd zijn door openstaande prereqs.
-    /// </summary>
     public IMyCollection<TaskItem> GetBlockedTasks()
         => _tasks.Filter(t => t.DependsOn.Length > 0 && !CanStart(t.Id));
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    //  Helpers 
 
     private TaskItem? FindTaskById(int id)
         => _tasks.FindBy(id, (t, k) => t.Id == k);
@@ -278,7 +269,6 @@ public class TaskService : ITaskService
     private int GetNextUserId()
         => _users.Reduce(0, (max, u) => u.Id > max ? u.Id : max) + 1;
 
-    // Eigen Contains zonder LINQ
     private bool ContainsId(int[] arr, int value)
     {
         for (int i = 0; i < arr.Length; i++)
@@ -286,14 +276,9 @@ public class TaskService : ITaskService
         return false;
     }
 
-    /// <summary>
-    /// Controleert of het toevoegen van prereqId als vereiste van taskId
-    /// een circulaire afhankelijkheid zou veroorzaken.
-    /// Eenvoudige DFS: kijk of taskId bereikbaar is vanuit prereqId.
-    /// </summary>
+
     private bool WouldCreateCycle(int taskId, int prereqId)
     {
-        // Als prereqId zelf afhankelijk is van taskId → cyclus
         TaskItem? prereq = FindTaskById(prereqId);
         if (prereq == null) return false;
 

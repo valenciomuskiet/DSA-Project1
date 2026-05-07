@@ -6,7 +6,7 @@ namespace Project1.Service;
 
 public interface ITaskService
 {
-    // Taken ophalen
+    // Taken 
     IMyCollection<TaskItem> GetAllTasks();
 
     // CRUD
@@ -22,7 +22,7 @@ public interface ITaskService
     void SortByCreatedAtAscending();
     void SortByPriorityDescending();
 
-    // Sprint 2: gebruikersbeheer & taaktoewijzing
+    // gebruikersbeheer & taaktoewijzing
     IMyCollection<User> GetAllUsers();
     bool AddUser(string name);
     bool RemoveUser(int userId);
@@ -30,7 +30,7 @@ public interface ITaskService
     bool UnassignTask(int taskId);
     IMyCollection<TaskItem> GetTasksByUser(int userId);
 
-    // Sprint 3: taakafhankelijkheden
+    // taakafhankelijkheden
     bool AddDependency(int taskId, int prereqId);
     bool RemoveDependency(int taskId, int prereqId);
     bool CanStart(int taskId);

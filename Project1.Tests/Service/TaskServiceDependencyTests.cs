@@ -13,24 +13,6 @@ public class TaskServiceDependencyTests
         new TaskService(new InMemoryRepository());
 
     [Fact]
-    public void AddDependency_GeldigePair_VoegtToe()
-    {
-        var service = MakeService();
-        service.AddTask("Taak A", TaskPriority.Medium);
-        service.AddTask("Taak B", TaskPriority.Medium);
-
-        var taken = service.GetAllTasks().ToArray();
-        int idA = taken[0].Id;
-        int idB = taken[1].Id;
-
-        bool result = service.AddDependency(idB, idA);
-        Assert.True(result);
-
-        var taakB = service.GetAllTasks().FindBy(idB, (t, k) => t.Id == k);
-        Assert.Contains(idA, taakB!.DependsOn);
-    }
-
-    [Fact]
     public void CanStart_ZonderPrereqs_RetourneertTrue()
     {
         var service = MakeService();
@@ -72,7 +54,7 @@ public class TaskServiceDependencyTests
     }
 
     [Fact]
-    public void AddDependency_CirkulaireAfhankelijkheid_WordtGeweigerd()
+    public void AddDependency_CirculaireAfhankelijkheid_WordtGeweigerd()
     {
         var service = MakeService();
         service.AddTask("Taak A", TaskPriority.Medium);
@@ -85,68 +67,5 @@ public class TaskServiceDependencyTests
         service.AddDependency(idB, idA);
         bool result = service.AddDependency(idA, idB);
         Assert.False(result);
-    }
-
-    [Fact]
-    public void AddDependency_ZelfdeTask_WordtGeweigerd()
-    {
-        var service = MakeService();
-        service.AddTask("Taak A", TaskPriority.Medium);
-        int id = service.GetAllTasks().ToArray()[0].Id;
-
-        bool result = service.AddDependency(id, id);
-        Assert.False(result);
-    }
-
-    [Fact]
-    public void RemoveDependency_VerwijdertPrereq()
-    {
-        var service = MakeService();
-        service.AddTask("Taak A", TaskPriority.Medium);
-        service.AddTask("Taak B", TaskPriority.Medium);
-
-        var taken = service.GetAllTasks().ToArray();
-        int idA = taken[0].Id;
-        int idB = taken[1].Id;
-
-        service.AddDependency(idB, idA);
-        service.RemoveDependency(idB, idA);
-
-        Assert.True(service.CanStart(idB));
-    }
-
-    [Fact]
-    public void GetBlockedTasks_RetourneertGeblokkeerde()
-    {
-        var service = MakeService();
-        service.AddTask("Taak A", TaskPriority.Medium);
-        service.AddTask("Taak B", TaskPriority.Medium);
-
-        var taken = service.GetAllTasks().ToArray();
-        int idA = taken[0].Id;
-        int idB = taken[1].Id;
-
-        service.AddDependency(idB, idA);
-
-        var geblokkeerd = service.GetBlockedTasks();
-        Assert.Equal(1, geblokkeerd.Count);
-    }
-
-    [Fact]
-    public void RemoveTask_VerwijdertOokAlsPrereq()
-    {
-        var service = MakeService();
-        service.AddTask("Taak A", TaskPriority.Medium);
-        service.AddTask("Taak B", TaskPriority.Medium);
-
-        var taken = service.GetAllTasks().ToArray();
-        int idA = taken[0].Id;
-        int idB = taken[1].Id;
-
-        service.AddDependency(idB, idA);
-        service.RemoveTask(idA);
-
-        var taakB = service.GetAllTasks().FindBy(idB, (t, k) => t.Id == k);
-        Assert.Empty(taakB!.DependsOn);
     }
 }

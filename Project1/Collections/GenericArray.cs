@@ -156,77 +156,6 @@ public void Sort(Comparison<T> comparison)
         Dirty = true;
     }
 
-    public void Swap(int i, int j)
-    {
-        ValidateIndex(i);
-        ValidateIndex(j);
-
-        T temp = _data[i];
-        _data[i] = _data[j];
-        _data[j] = temp;
-        Dirty = true;
-    }
-
-    public void Reverse()
-    {
-        int left = 0;
-        int right = _index;
-
-        while (left < right)
-        {
-            Swap(left, right);
-            left++;
-            right--;
-        }
-    }
-
-    public T[] CloneData()
-    {
-        T[] copy = new T[Count];
-
-        for (int i = 0; i < Count; i++)
-            copy[i] = _data[i];
-
-        return copy;
-    }
-
-    public void Shift(int amount, bool right = true)
-    {
-        if (amount <= 0 || Count == 0)
-            return;
-
-        if (right)
-        {
-            while (_index + amount >= _data.Length)
-                Resize(_data.Length * 2);
-
-            for (int j = _index; j >= 0; j--)
-                _data[j + amount] = _data[j];
-
-            for (int j = 0; j < amount; j++)
-                _data[j] = default!;
-
-            _index += amount;
-        }
-        else
-        {
-            if (amount > _index + 1)
-            {
-                Clear();
-                return;
-            }
-
-            for (int j = 0; j <= _index - amount; j++)
-                _data[j] = _data[j + amount];
-
-            for (int j = _index - amount + 1; j <= _index; j++)
-                _data[j] = default!;
-
-            _index -= amount;
-        }
-
-        Dirty = true;
-    }
 
     public R Reduce<R>(R initial, Func<R, T, R> accumulator)
     {
@@ -245,9 +174,11 @@ public void Sort(Comparison<T> comparison)
 
     public T[] ToArray()
     {
-        return CloneData();
+        T[] copy = new T[Count];
+        for (int i = 0; i < Count; i++)
+            copy[i] = _data[i];
+        return copy;
     }
-
     public void Clear()
     {
         for (int i = 0; i <= _index; i++)

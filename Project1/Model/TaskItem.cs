@@ -9,10 +9,8 @@ public class TaskItem : IEquatable<TaskItem>, IComparable<TaskItem>
     public TaskStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
 
-    // Sprint 2: taaktoewijzing
     public int? AssignedUserId { get; set; }
 
-    // Sprint 3: taakafhankelijkheden (IDs van taken die eerst Done moeten zijn)
     public int[] DependsOn { get; set; } = Array.Empty<int>();
 
     public bool Equals(TaskItem? other)

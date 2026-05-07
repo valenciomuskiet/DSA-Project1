@@ -19,7 +19,6 @@ public class JsonTaskRepository : ITaskRepository
         _collectionType = collectionType;
     }
 
-    // ── Taken ────────────────────────────────────────────────────────────────
 
     public IMyCollection<TaskItem> LoadTasks()
     {
@@ -51,9 +50,7 @@ public class JsonTaskRepository : ITaskRepository
         tasks.Dirty = false;
     }
 
-    // ── Users (Sprint 2) ─────────────────────────────────────────────────────
-    // Users worden altijd als DoublyLinkedList opgeslagen omdat Sprint 2
-    // dit als demonstratie van de linked list data structure vereist.
+
 
     public IMyCollection<User> LoadUsers()
     {

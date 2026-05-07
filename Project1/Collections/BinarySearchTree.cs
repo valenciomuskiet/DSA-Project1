@@ -1,19 +1,7 @@
 namespace Project1.Collections;
-
-/// <summary>
-/// Binary Search Tree implementatie van IMyCollection.
-/// Gebaseerd op slides Unit 5 (week 10):
-///   - BST-eigenschap: left.Value < node.Value <= right.Value (slide 28)
-///   - Insert: zoek de juiste positie recursief (slides 32-36)
-///   - Search: vergelijk en ga links/rechts (slides 30-31)
-///   - Delete: drie gevallen — geen kind, één kind, twee kinderen (slides 37-43)
-///   - InOrder traversal geeft gesorteerde volgorde (slide 18-23)
-/// Vergelijking via IComparable<T> — TaskItem.CompareTo vergelijkt op Id.
-/// </summary>
 public class BinarySearchTree<T> : IMyCollection<T>
     where T : IEquatable<T>, IComparable<T>
 {
-    // ── Interne Node-klasse (slide 26) ───────────────────────────────────────
     private class Node
     {
         public T Value;
@@ -34,8 +22,6 @@ public class BinarySearchTree<T> : IMyCollection<T>
     public bool Dirty { get; set; }
     public int Count => _count;
 
-    // ── Insert (slides 32-36) ────────────────────────────────────────────────
-    // Zoek recursief de juiste positie en voeg in als blad.
     public void Add(T item)
     {
         _root = Insert(_root, item);
@@ -57,12 +43,6 @@ public class BinarySearchTree<T> : IMyCollection<T>
 
         return node;
     }
-
-    // ── Delete (slides 37-43) ────────────────────────────────────────────────
-    // Drie gevallen:
-    //   1. Geen kinderen: verwijder direct
-    //   2. Één kind: vervang node door het kind
-    //   3. Twee kinderen: vervang door in-order successor (kleinste van rechts)
     public bool Remove(T item)
     {
         int before = _count;
@@ -88,17 +68,15 @@ public class BinarySearchTree<T> : IMyCollection<T>
         }
         else if (node.Value.Equals(item))
         {
-            // Gevonden — bepaal welk geval van toepassing is
             _count--;
 
             if (node.Left == null) return node.Right;  // geval 1 of 2
             if (node.Right == null) return node.Left;  // geval 2
 
-            // Geval 3: twee kinderen → in-order successor (slide 38-39)
             Node successor = FindMin(node.Right);
             node.Value = successor.Value;
             node.Right = Delete(node.Right, successor.Value);
-            _count++; // Delete hierboven telt al af, corrigeer
+            _count++; 
         }
         else
         {
@@ -109,7 +87,6 @@ public class BinarySearchTree<T> : IMyCollection<T>
         return node;
     }
 
-    // Kleinste node in een deelboom = meest linkse blad (slide 38)
     private Node FindMin(Node node)
     {
         while (node.Left != null)
@@ -117,14 +94,12 @@ public class BinarySearchTree<T> : IMyCollection<T>
         return node;
     }
 
-    // ── Search (slides 30-31) ────────────────────────────────────────────────
     public T? FindBy<K>(K key, Func<T, K, bool> comparer)
     {
         return FindInOrder(_root, key, comparer);
     }
 
-    // BST-search is alleen O(log n) als de key overeenkomt met de sort-key (Id).
-    // Voor andere keys (bijv. status) doorzoeken we de hele boom via InOrder.
+    
     private T? FindInOrder<K>(Node? node, K key, Func<T, K, bool> comparer)
     {
         if (node == null) return default;
@@ -137,7 +112,6 @@ public class BinarySearchTree<T> : IMyCollection<T>
         return FindInOrder(node.Right, key, comparer);
     }
 
-    // ── Filter ───────────────────────────────────────────────────────────────
     public IMyCollection<T> Filter(Func<T, bool> predicate)
     {
         BinarySearchTree<T> result = new BinarySearchTree<T>();
@@ -153,14 +127,10 @@ public class BinarySearchTree<T> : IMyCollection<T>
         FilterInOrder(node.Right, predicate, result);
     }
 
-    // ── Sort ─────────────────────────────────────────────────────────────────
-    // InOrder traversal geeft al een gesorteerde volgorde (slide 18-23).
-    // Voor een andere sort-volgorde: kopieer naar array, sorteer, herbouw.
     public void Sort(Comparison<T> comparison)
     {
         T[] arr = ToArray();
 
-        // Insertion sort (Unit 2 slides)
         for (int i = 1; i < arr.Length; i++)
         {
             T key = arr[i];
@@ -173,14 +143,12 @@ public class BinarySearchTree<T> : IMyCollection<T>
             arr[j + 1] = key;
         }
 
-        // Herbouw BST in gesorteerde volgorde zodat de boom gebalanceerd blijft
         _root = null;
         _count = 0;
         BuildBalanced(arr, 0, arr.Length - 1);
         Dirty = true;
     }
 
-    // Bouw een gebalanceerde BST door altijd de middelste waarde als root te kiezen
     private void BuildBalanced(T[] arr, int left, int right)
     {
         if (left > right) return;
@@ -190,7 +158,6 @@ public class BinarySearchTree<T> : IMyCollection<T>
         BuildBalanced(arr, mid + 1, right);
     }
 
-    // ── Reduce ───────────────────────────────────────────────────────────────
     public R Reduce<R>(R initial, Func<R, T, R> accumulator)
     {
         R result = initial;
@@ -206,7 +173,6 @@ public class BinarySearchTree<T> : IMyCollection<T>
         ReduceInOrder(node.Right, ref result, accumulator);
     }
 
-    // ── ToArray: InOrder = gesorteerd op Id (slide 18) ───────────────────────
     public T[] ToArray()
     {
         T[] result = new T[_count];
@@ -223,7 +189,6 @@ public class BinarySearchTree<T> : IMyCollection<T>
         InOrder(node.Right, result, ref index);
     }
 
-    // ── Iterator: InOrder traversal (slide 18) ───────────────────────────────
     public IMyIterator<T> GetIterator()
     {
         return new BSTIterator(this);

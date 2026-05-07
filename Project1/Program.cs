@@ -9,7 +9,7 @@ internal class Program
 {
     static void Main(string[] args)
     {
-        // 1. Gebruiker kiest de data structure
+        // 1. Gebruiker kiest data structure
         CollectionFactory.CollectionType chosen = CollectionFactory.PromptUser();
         string collectionName = CollectionFactory.GetName(chosen);
 
@@ -18,15 +18,15 @@ internal class Program
         Console.WriteLine("  Applicatie wordt gestart...");
         Console.WriteLine();
 
-        // 2. Repository krijgt de keuze mee zodat LoadTasks() de juiste collectie aanmaakt
+        // 2. Repository krijgt de keuze mee zodat LoadTasks() juiste collectie aanmaakt
         string filePath = "tasks.json";
         ITaskRepository repository = new JsonTaskRepository(filePath, chosen);
 
-        // 3. Service en view zijn volledig onafhankelijk van de gekozen implementatie
+        // 3. Service  view zijn volledig onafhankelijk van de gekozen implementatie
         ITaskService service = new TaskService(repository);
         ITaskView view = new ConsoleTaskView(service, collectionName);
 
-        // 4. Start de applicatie
+        // 4. Start applicatie
         view.Run();
     }
 }
