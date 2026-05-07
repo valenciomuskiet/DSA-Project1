@@ -187,10 +187,10 @@ public void Sort(Comparison<T> comparison)
 
     public T[] ToArray()
     {
-    T[] copy = new T[Count];
-    for (int i = 0; i < Count; i++)
-        copy[i] = _data[i];
-    return copy;
+        T[] copy = new T[Count];
+        for (int i = 0; i < Count; i++)
+            copy[i] = _data[i];
+        return copy;
     }
     public void Clear()
     {
